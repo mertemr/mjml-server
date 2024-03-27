@@ -18,7 +18,7 @@ be sent to yet another third party?).
 
 For an elaborate discussion see: https://github.com/mjmlio/mjml/issues/340
 
-#### Usage
+#### Local Usage
 
 ```
 docker run -p 15500:15500 danihodovic/mjml-server
@@ -43,3 +43,20 @@ X-Powered-By: Express
 
 A list of available configuration options can be found in
 [./lib/parse_args.js](./lib/parse_args.js).
+
+### Using custom tags in sandbox Create:
+When testing in a sandbox, you can use the commit id, timestamp or branch to test. If you want are wanting to use branch
+name during testing to avoid having to retype the new `mjmlRef` in sandbox create, use the generated branch name in the 
+action log. The branch name is normalized so it doesn't break any of docker's rules for image tags, 
+i.ie uppercase letters are not allowed. Pay attention to
+the generated values used for the tag.
+
+### Places to update after release
+#### Direct Backend:
+
+1. `.aws/task_definitions/directprod/mjml.json`
+2. `.aws/task_definitions/directuat/mjml.json`
+3. `.github/workflows/deploy.yml`
+4. `docker-compose.yml`
+
+#### Core Web:

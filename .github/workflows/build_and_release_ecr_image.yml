@@ -1,0 +1,115 @@
+name: CI & CD
+
+on: [push]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: 'Lint & Test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npx eslint .
+
+      - name: Run Mocha tests
+        run: npx mocha
+  build-tag-push-image:
+    name: 'Build, Tag & Push Image'
+    runs-on: ubuntu-latest
+    env:
+      ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml"
+      SHORT_COMMIT_ID: ${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set timestamp with lowercase month
+        run: |
+          echo "TIMESTAMP=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
+          echo "Timestamp tag is '${{ env.TIMESTAMP }}'"
+      - name: Extract branch name and make docker tag compliant.
+        id: extract_branch
+        run: echo "NORMALIZED_BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed -e 's/[^a-zA-Z0-9_.-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: Login to core-prod AWS account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.PROD_AWS_ACCOUNT_ID }}:role/github-actions
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPO:$SHORT_COMMIT_ID .
+
+      - name: Tag And Push Docker image
+        run: |
+          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ env.NORMALIZED_BRANCH_NAME }}
+          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ env.TIMESTAMP }}
+          docker push --all-tags $ECR_REPO
+          echo "tagged image with tags '${{ env.NORMALIZED_BRANCH_NAME }}' '$SHORT_COMMIT_ID' '${{ env.TIMESTAMP }}'"
+
+  release-on-push:
+    name: 'Release New Tag On Master Push'
+    needs: [lint-and-test, build-tag-push-image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    if: github.ref == 'refs/heads/master'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: rymndhng/release-on-push-action@v0.28.0
+        id: release-on-push
+        with:
+          bump_version_scheme: major
+          tag_prefix: "v"
+          release_name: "MJML Server Release <RELEASE_VERSION>"
+          use_github_release_notes: true
+    outputs:
+      release_version: ${{ steps.release-on-push.outputs.tag_name }}
+  tag-image-with-release-and-latest:
+    name: 'Tag Image With New Release and latest'
+    needs: [lint-and-test, build-tag-push-image, release-on-push]
+    runs-on: ubuntu-latest
+    env:
+      ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml"
+      SHORT_COMMIT_ID: ${{ github.sha }}
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Login to core-prod AWS account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.PROD_AWS_ACCOUNT_ID }}:role/github-actions
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+      - name: Tag Docker Image with Latest and Release Tag
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker pull $ECR_REPO:$SHORT_COMMIT_ID
+          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:latest
+          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
+          docker push --all-tags $ECR_REPO
+          echo "Release version '${{ needs.release-on-push.outputs.release_version }}'"
