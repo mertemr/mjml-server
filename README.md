@@ -44,10 +44,22 @@ X-Powered-By: Express
 A list of available configuration options can be found in
 [./lib/parse_args.js](./lib/parse_args.js).
 
+### Release Versioning
+After merging the PR, a new version will be automatically released and pushed to MJML ECR with version bump by default.
+By default, the release version is bumped by the `patch` scheme. 
+
+#### How do I change the bump version scheme using Pull Requests?
+
+If we need to override the default bump scheme, we can do this  but adding one of these labels to the PR has the 
+label `release:major`, `release:minor`, or `release:patch`, this will override bump_version_scheme.
+
+
+This repository's pull requests are an example of this in action. For example, [#19](https://github.com/rymndhng/release-on-push-action/pull/19).
+
 ### Using custom tags in sandbox Create:
 When testing in a sandbox, you can use the commit id, timestamp or branch to test. If you want are wanting to use branch
-name during testing to avoid having to retype the new `mjmlRef` in sandbox create, use the generated branch name in the 
-action log. The branch name is normalized so it doesn't break any of docker's rules for image tags, 
+name during testing to avoid having to retype the new `mjmlTag` in sandbox create, use the generated branch name in the 
+action log. The branch name is normalized, so it doesn't break any of docker's rules for image tags, 
 i.ie uppercase letters are not allowed. Pay attention to
 the generated values used for the tag.
 
