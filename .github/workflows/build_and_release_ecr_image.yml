@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: '12.x'
 
@@ -27,6 +27,7 @@ jobs:
 
       - name: Run Mocha tests
         run: npx mocha
+
   build-tag-push-image:
     name: 'Build, Tag & Push Image'
     runs-on: ubuntu-latest
@@ -36,34 +37,40 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set timestamp with lowercase month
+
+      - name: Set timestamp
         run: |
           echo "TIMESTAMP=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
           echo "Timestamp tag is '${{ env.TIMESTAMP }}'"
-      - name: Extract branch name and make docker tag compliant.
-        id: extract_branch
-        run: echo "NORMALIZED_BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed -e 's/[^a-zA-Z0-9_.-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract branch name and make docker tag compliant
+        run: |
+          echo "NORMALIZED_BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed -e 's/[^a-zA-Z0-9_.-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Login to core-prod AWS account
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: arn:aws:iam::${{ secrets.PROD_AWS_ACCOUNT_ID }}:role/github-actions
+
       - name: Login to AWS ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v2
         with:
-          mask-password: 'true'
-
-      - name: Build Docker image
-        run: |
-          docker build -t $ECR_REPO:$SHORT_COMMIT_ID .
-
-      - name: Tag And Push Docker image
-        run: |
-          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ env.NORMALIZED_BRANCH_NAME }}
-          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ env.TIMESTAMP }}
-          docker push --all-tags $ECR_REPO
-          echo "tagged image with tags '${{ env.NORMALIZED_BRANCH_NAME }}' '$SHORT_COMMIT_ID' '${{ env.TIMESTAMP }}'"
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.ECR_REPO }}:${{ env.SHORT_COMMIT_ID }}
+            ${{ env.ECR_REPO }}:${{ env.NORMALIZED_BRANCH_NAME }}
+            ${{ env.ECR_REPO }}:${{ env.TIMESTAMP }}
+          platforms: linux/arm64
 
   release-on-push:
     name: 'Release New Tag On Master Push'
@@ -85,6 +92,7 @@ jobs:
           use_github_release_notes: true
     outputs:
       release_version: ${{ steps.release-on-push.outputs.tag_name }}
+
   tag-image-with-release-and-latest:
     name: 'Tag Image With New Release and latest'
     needs: [lint-and-test, build-tag-push-image, release-on-push]
@@ -106,10 +114,10 @@ jobs:
         with:
           mask-password: 'true'
       - name: Tag Docker Image with Latest and Release Tag
-        if: github.ref == 'refs/heads/master'
         run: |
           docker pull $ECR_REPO:$SHORT_COMMIT_ID
           docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:latest
           docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
-          docker push --all-tags $ECR_REPO
+          docker push $ECR_REPO:latest
+          docker push $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
           echo "Release version '${{ needs.release-on-push.outputs.release_version }}'"
