@@ -60,3 +60,7 @@ the generated values used for the tag.
 4. `docker-compose.yml`
 
 #### Core Web:
+TBD
+
+#### Eunomia:
+TBD
