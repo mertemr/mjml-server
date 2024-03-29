@@ -95,12 +95,7 @@ it may get confusing since "mjml" is logged a lot, jenkins also uses the sandbox
 
 #### Blue Green Environments (Staging, Demo, Test)
 Use the `blue_green_create` jenkins job.
-For blue-green environment testing, set `buildScriptsWebBranch` and `webRef` to your branch. You must update the mjmlTag default value in eunomia  `modules/main/variables.tf` AND hardcode 
-your branch to the eunomia reference in web since there isn't a way to point to a specified eunomia branch. For example if you want to 
-test in the staging environment you must update staging blue and green terraform files i.e. <br>
-`build/terraform/environments/eatclubstaging/green/green.tf`,<br>
-`build/terraform/environments/eatclubstaging/blue/blue.tf`<br>
-from `"git@github.com:eatclub/eunomia.git//modules/main?ref=v9.0.0"` to `"git@github.com:eatclub/eunomia.git//modules/main?ref=<your-branch>"`
+For blue-green environment testing, set `buildScriptsWebBranch` and `webRef` to your branch.
 
 ### Places to update after release
 #### Direct Backend:
@@ -111,10 +106,4 @@ from `"git@github.com:eatclub/eunomia.git//modules/main?ref=v9.0.0"` to `"git@gi
 4. `docker-compose.yml`
 
 #### Core Web:
-1. `build/scripts/jenkins/sandbox_create/Jenkinsfile`
-2. `build/scripts/jenkins/web_stable/Jenkinsfile`
-3. `docker-compose.yml`
-4. `build/docker/web_unittest/docker-compose.yml`
-5. Update all `mjml_tag` values in blue-green terraform files. There should be 8 total references in, one ref in 8 different files (a blue and green file for each of prod, testing, staging and demo.)
-
-In total there should be 13 references updated including mjmlTag description, 12 files total. 
+1. `build/constants/mjml_stable_ecr_tag.txt`
