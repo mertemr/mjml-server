@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml"
-      SHORT_COMMIT_ID: ${{ github.sha }}
+      COMMIT_ID: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -67,7 +67,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.ECR_REPO }}:${{ env.SHORT_COMMIT_ID }}
+            ${{ env.ECR_REPO }}:${{ env.COMMIT_ID }}
             ${{ env.ECR_REPO }}:${{ env.NORMALIZED_BRANCH_NAME }}
             ${{ env.ECR_REPO }}:${{ env.TIMESTAMP }}
           platforms: linux/arm64
@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml"
-      SHORT_COMMIT_ID: ${{ github.sha }}
+      COMMIT_ID: ${{ github.sha }}
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Login to core-prod AWS account
@@ -115,9 +115,9 @@ jobs:
           mask-password: 'true'
       - name: Tag Docker Image with Latest and Release Tag
         run: |
-          docker pull $ECR_REPO:$SHORT_COMMIT_ID
-          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:latest
-          docker tag $ECR_REPO:$SHORT_COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
+          docker pull $ECR_REPO:$COMMIT_ID
+          docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:latest
+          docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
           docker push $ECR_REPO:latest
           docker push $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
           echo "Release version '${{ needs.release-on-push.outputs.release_version }}'"
