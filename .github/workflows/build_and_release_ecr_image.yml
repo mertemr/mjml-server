@@ -79,7 +79,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-#    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -100,7 +100,7 @@ jobs:
     env:
       ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server"
       COMMIT_ID: ${{ github.sha }}
-#    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Login to core-prod AWS account
         uses: aws-actions/configure-aws-credentials@v4
