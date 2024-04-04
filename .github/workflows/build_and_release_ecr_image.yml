@@ -115,7 +115,7 @@ jobs:
           mask-password: 'true'
       - name: Tag Docker Image with Latest and Release Tag
         run: |
-          docker pull $ECR_REPO:$COMMIT_ID
+          docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
           docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:latest
           docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
           docker push $ECR_REPO:latest
