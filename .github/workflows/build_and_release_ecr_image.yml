@@ -121,7 +121,7 @@ jobs:
         run: docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
 
       - name: List all files
-        run: ls -al
+        run: ls
 
       - name: Build, Tag & Push Multi-Platform Image
         run: |
