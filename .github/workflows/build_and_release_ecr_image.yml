@@ -127,7 +127,8 @@ jobs:
           docker buildx create --use
           docker buildx build --platform linux/amd64,linux/arm64 \
             --tag $ECR_REPO:test \
-            --file ./Dockerfile
+            --file ./Dockerfile \
+            .
           echo "Testing build on release w/o a release =)"
 
       # - name: Build, Tag & Push Multi-Platform Image
