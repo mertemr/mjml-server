@@ -104,6 +104,9 @@ jobs:
       ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server"
       COMMIT_ID: ${{ github.sha }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to core-prod AWS account
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -120,7 +123,7 @@ jobs:
         run: docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
 
       - name: List all files
-        run: ls -la
+        run: ls
 
       - name: Build, Tag & Push Multi-Platform Image
         run: |
