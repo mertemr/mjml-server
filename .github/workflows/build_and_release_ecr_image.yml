@@ -121,7 +121,7 @@ jobs:
         run: docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
 
       - name: List all files
-        run: ls
+        run: ls -la
 
       - name: Build, Tag & Push Multi-Platform Image
         run: |
@@ -129,6 +129,6 @@ jobs:
           docker buildx build --platform linux/amd64,linux/arm64 \
 #            --tag $ECR_REPO:latest \
             --tag $ECR_REPO:test \
-            --file ./Dockerfile \
+            --file ./Dockerfile
 #            --push .
           echo "Testing build on release w/o a release =)"
