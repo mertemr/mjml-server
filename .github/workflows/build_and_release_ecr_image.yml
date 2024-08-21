@@ -131,3 +131,4 @@ jobs:
             --tag $ECR_REPO:${{ needs.release-on-push.outputs.release_version }} \
             --push .
           echo "Release version '${{ needs.release-on-push.outputs.release_version }}'"
+  
