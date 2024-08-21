@@ -116,11 +116,15 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
-      - name: Tag Docker Image with Latest and Release Tag
+
+      - name: Pull Original Image for ARM64
+        run: docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
+
+      - name: Build, Tag & Push Multi-Platform Image
         run: |
-          docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
-          docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:latest
-          docker tag $ECR_REPO:$COMMIT_ID $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
-          docker push $ECR_REPO:latest
-          docker push $ECR_REPO:${{ needs.release-on-push.outputs.release_version }}
+          docker buildx create --use
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --tag $ECR_REPO:latest \
+            --tag $ECR_REPO:${{ needs.release-on-push.outputs.release_version }} \
+            --push .
           echo "Release version '${{ needs.release-on-push.outputs.release_version }}'"
