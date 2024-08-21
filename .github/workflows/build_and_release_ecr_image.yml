@@ -98,15 +98,17 @@ jobs:
 
   tag-image-with-release-and-latest:
     name: 'Tag Image With New Release and latest'
-#    needs: [lint-and-test, build-tag-push-image, release-on-push]
     needs: [lint-and-test, build-tag-push-image]
     runs-on: ubuntu-latest
     env:
       ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server"
       COMMIT_ID: ${{ github.sha }}
-#    if: github.ref == 'refs/heads/master'
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to core-prod AWS account
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: arn:aws:iam::${{ secrets.PROD_AWS_ACCOUNT_ID }}:role/github-actions
@@ -121,12 +123,23 @@ jobs:
         run: docker pull --platform linux/arm64 $ECR_REPO:$COMMIT_ID
 
       - name: List all files
-        run: ls -al
+        run: ls
 
       - name: Build, Tag & Push Multi-Platform Image
         run: |
           docker buildx create --use
           docker buildx build --platform linux/amd64,linux/arm64 \
             --tag $ECR_REPO:test \
-            --file ./Dockerfile
+            --file ./Dockerfile \
+            .
           echo "Testing build on release w/o a release =)"
+
+      # - name: Build, Tag & Push Multi-Platform Image
+      #   run: |
+      #     docker buildx create --use
+      #     docker buildx build --platform linux/amd64,linux/arm64 \
+      #       --tag $ECR_REPO:latest \
+      #       --tag $ECR_REPO:test \
+      #       --file ./Dockerfile \
+      #       --push .
+      #     echo "Testing build on release w/o a release =)"
