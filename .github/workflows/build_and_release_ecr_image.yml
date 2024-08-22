@@ -105,6 +105,9 @@ jobs:
       COMMIT_ID: ${{ github.sha }}
     if: github.ref == 'refs/heads/master'
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to core-prod AWS account
         uses: aws-actions/configure-aws-credentials@v4
         with:
