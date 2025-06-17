@@ -14,40 +14,41 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danihodovic/mjml-http-server.git"
+    "url": "git+https://github.com/mertemr/mjml-server.git"
   },
   "author": "Dani Hodovic",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/danihodovic/mjml-http-server/issues"
+    "url": "https://github.com/mertemr/mjml-server/issues"
   },
   "bin": {
     "mjml-http-server": "./index.js"
   },
-  "homepage": "https://github.com/danihodovic/mjml-http-server#readme",
+  "homepage": "https://github.com/mertemr/mjml-server#readme",
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "express": "^4.19.2",
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
     "express-winston": "^4.2.0",
     "install": "^0.13.0",
     "mjml": "^4.15.3",
     "node-graceful": "^3.1.0",
-    "winston": "^3.13.0",
-    "yargs": "^17.7.2"
+    "winston": "^3.17.0",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "axios": "^1.6.7",
-    "chai": "^4.2.0",
-    "eslint": "^7.13.0",
-    "eslint-config-standard": "^14.0.1",
-    "eslint-plugin-import": "^2.18.0",
-    "eslint-plugin-no-only-tests": "^2.3.1",
-    "eslint-plugin-node": "^11.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "mocha": "^10.3.0"
+    "axios": "^1.10.0",
+    "chai": "^5.2.0",
+    "eslint": "^9.29.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-no-only-tests": "^3.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "mocha": "^11.6.0",
+    "prettier": "^3.5.3"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=24.0.0"
   }
 }
