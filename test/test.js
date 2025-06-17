@@ -4,14 +4,14 @@ const axios = require('axios')
 const { expect } = require('chai')
 const packageJson = require('../package.json')
 
-const { create } = require('../lib/server.js')
+const { createApp } = require('../lib/server.js')
 
 describe('server', function () {
   let server
   let url
 
   before(async () => {
-    server = await create({ validationLevel: 'strict' }).listen()
+    server = await createApp({ validationLevel: 'strict' }).listen()
     url = `http://localhost:${server.address().port}`
   })
 
@@ -65,7 +65,7 @@ describe('server', function () {
     const res = await makeReq(url, { path: '/' })
     expect(res.status).to.eql(404)
     expect(res.data).to.eql({
-      message: "You're probably looking for /v1/render"
+      message: 'Endpoint not found. Try POST /v1/render'
     })
   })
 
@@ -91,7 +91,7 @@ describe('with --max-body', function () {
   let url
 
   before(async () => {
-    server = await create({ maxBody: '10' }).listen()
+    server = await createApp({ maxBody: '10' }).listen()
     url = `http://localhost:${server.address().port}`
   })
 
