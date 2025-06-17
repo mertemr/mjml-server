@@ -1,23 +1,19 @@
 {
-  "name": "mjml-http-server",
-  "version": "0.1.0",
-  "description": "Dockerized mjml http server from https://github.com/shyim/mjml-server",
+  "name": "mjml-renderer-express-server",
+  "version": "1.0.0",
+  "description": "Dockerized mjml renderer server with Express.js",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "node index.js"
+    "start": "node index.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
-  "files": [
-    "/lib",
-    "index.js",
-    "LICENSE",
-    "README.md"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mertemr/mjml-server.git"
   },
-  "author": "Dani Hodovic",
+  "author": "Mert Emirimam",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mertemr/mjml-server/issues"
@@ -27,10 +23,8 @@
   },
   "homepage": "https://github.com/mertemr/mjml-server#readme",
   "dependencies": {
-    "body-parser": "^2.2.0",
     "express": "^5.1.0",
     "express-winston": "^4.2.0",
-    "install": "^0.13.0",
     "mjml": "^4.15.3",
     "node-graceful": "^3.1.0",
     "winston": "^3.17.0",

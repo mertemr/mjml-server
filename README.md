@@ -6,6 +6,20 @@ The API is compatible with https://mjml.io/api in that it only exposes one
 endpoint - `/v1/render`, but doesn't require authentication. You should probably
 run this within your own private network.
 
+## Fork Overview
+
+This project originates from `eatclub/mjml-server`, which itself is a fork of the original `danihodovic/mjml-server` by Dani Hodovic.
+
+This fork has been significantly modernized and improved to better suit our needs, including:
+
+- A modernized Docker build with significantly reduced CVE exposure
+
+- Security-first defaults in HTTP and container configuration
+
+- Improved logging, monitoring, and error handling
+
+- Enhanced configuration management for scalability and maintainability
+
 #### Why?
 
 You're writing an app in another language than Javascript and need to interop
