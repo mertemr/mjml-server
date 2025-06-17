@@ -6,9 +6,11 @@ The API is compatible with https://mjml.io/api in that it only exposes one
 endpoint - `/v1/render`, but doesn't require authentication. You should probably
 run this within your own private network.
 
+Check out the [Usage](#usage) section for more details on how to run the server.
+
 ## Fork Overview
 
-This project originates from `eatclub/mjml-server`, which itself is a fork of the original `danihodovic/mjml-server` by Dani Hodovic.
+This project originates from `eatclub/mjml-server`, which itself is a fork of the original `mertemr/mjml-server` by Dani Hodovic.
 
 This fork has been significantly modernized and improved to better suit our needs, including:
 
@@ -32,31 +34,63 @@ be sent to yet another third party?).
 
 For an elaborate discussion see: https://github.com/mjmlio/mjml/issues/340
 
-#### Local Usage
+## Usage
 
-```
-docker run -p 15500:15500 danihodovic/mjml-server
+For default settings, you can run the server with the following command:
+
+```bash
+docker run -p 15500:15500 mactorient/mjml-server:latest
 ```
 
+You can then use the following command to render MJML to HTML:
+
+```bash
+$ curl -i -X POST http://localhost:15500/v1/render \
+    -H "Content-Type: application/json" \
+    -d '{"mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Hello world</mj-text></mj-column></mj-section></mj-body></mjml>"}'
 ```
-$ http POST localhost:15500/v1/render
+
+```bash
 HTTP/1.1 200 OK
-Connection: keep-alive
-Content-Length: 2141
 Content-Type: application/json; charset=utf-8
-Date: Mon, 15 Jul 2019 12:26:48 GMT
-ETag: W/"85d-hn49R397DBvYcOi5/4cb+gcoi/I"
-X-Powered-By: Express
+Content-Length: 4272
+ETag: ...
+Vary: Accept-Encoding
+Date: Tue, 17 Jun 2025 18:55:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
 
 {
-    "html": "\n    <!doctype html>\n    ..."
+    "html": "<!doctype html>\n<html ...</html>",
+    "mjml": "<mjml>...</mjml>",
+    "mjml_version": "^4.15.3",
+    "errors": [],
 }
 ```
 
 #### Configuration
 
-A list of available configuration options can be found in
-[./lib/parse_args.js](./lib/parse_args.js).
+These options can be set globally via CLI or per-request via JSON:
+| Option (POST) | CLI Flag | Default | Description |
+| --------------- | -------------------- | ------- | ------------------------------------ |
+| keepComments | `--keep-comments` | true | Keep MJML comments in output HTML |
+| beautify | `--beautify` | false | Pretty print the output HTML |
+| minify | `--minify` | false | Minify the resulting HTML |
+| validationLevel | `--validation-level` | soft | MJML validation (strict, soft, skip) |
+| | `--port` | 15500 | Port to run the server on |
+| | `--host` | 0.0.0.0 | Host to bind the server to |
+| | `--max-body` | 1mb | Maximum request body size |
+
+#### Example with configuration
+
+```bash
+docker run -d -p 15500:15500 mactorient/mjml-server:latest \
+    --keep-comments \
+    --beautify \
+    --minify \
+    --validation-level strict \
+    --max-body 5mb
+```
 
 ### Release Versioning
 
