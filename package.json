@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/mertemr/mjml-server#readme",
   "dependencies": {
+    "compression": "^1.8.0",
     "express": "^5.1.0",
     "express-winston": "^4.2.0",
     "mjml": "^4.15.3",
