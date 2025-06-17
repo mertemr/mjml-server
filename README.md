@@ -45,24 +45,25 @@ A list of available configuration options can be found in
 [./lib/parse_args.js](./lib/parse_args.js).
 
 ### Release Versioning
+
 After merging the PR, a new version will be automatically released and pushed to MJML ECR with version bump by default.
-By default, the release version is bumped by the `patch` scheme. 
+By default, the release version is bumped by the `patch` scheme.
 
 #### How do I change the bump version scheme using Pull Requests?
 
-If we need to override the default bump scheme, we can do this  but adding one of these labels to the PR has the 
+If we need to override the default bump scheme, we can do this but adding one of these labels to the PR has the
 label `release:major`, `release:minor`, or `release:patch`, this will override bump_version_scheme.
-
 
 This repository's pull requests are an example of this in action. For example, [#19](https://github.com/rymndhng/release-on-push-action/pull/19).
 
 ### Testing
+
 When testing, you can use the commit id, timestamp or branch to test. If you want to use branch
-name during testing to avoid having to constantly update the mjml tag the latest version, use the generated branch name in the 
-action log. The latest image is always tagged with the branch name. The branch name is normalized, so it doesn't break any of docker's rules for image tags, 
+name during testing to avoid having to constantly update the mjml tag the latest version, use the generated branch name in the
+action log. The latest image is always tagged with the branch name. The branch name is normalized, so it doesn't break any of docker's rules for image tags,
 i.e. uppercase letters are not allowed. Pay attention to the generated values used for the tag.
 
-For testing, Consider using an admin function or a view that sends an email synchronously.  i.e
+For testing, Consider using an admin function or a view that sends an email synchronously. i.e
 
 ```python
             try:
@@ -86,18 +87,21 @@ For testing, Consider using an admin function or a view that sends an email sync
             else:
                 messages.success(request, f"Successfully sent {user.email} an email.")
 ```
+
 #### Sandbox
 
-To test the mjml server in a sandbox, use the  `mjmlTag` field for the tag in `sandbox_create` jenkins job. 
-Set `buildScriptsWebBranch` and `webRef` to your branch. 
+To test the mjml server in a sandbox, use the `mjmlTag` field for the tag in `sandbox_create` jenkins job.
+Set `buildScriptsWebBranch` and `webRef` to your branch.
 Pro-tip: use your branch name or anything other than "mjml" or a variation of for your sandbox name. When debugging the console output
-it may get confusing since "mjml" is logged a lot, jenkins also uses the sandbox name to create a file. Jenkins' error messages are not always intuitive. You've been warned! 
+it may get confusing since "mjml" is logged a lot, jenkins also uses the sandbox name to create a file. Jenkins' error messages are not always intuitive. You've been warned!
 
 #### Blue Green Environments (Staging, Demo, Test)
+
 Use the `blue_green_create` jenkins job.
 For blue-green environment testing, set `buildScriptsWebBranch` and `webRef` to your branch.
 
 ### Places to update after release
+
 #### Direct Backend:
 
 1. `.aws/task_definitions/directprod/mjml.json`
@@ -106,4 +110,5 @@ For blue-green environment testing, set `buildScriptsWebBranch` and `webRef` to 
 4. `docker-compose.yml`
 
 #### Core Web:
+
 1. `build/constants/mjml_stable_ecr_tag.txt`
