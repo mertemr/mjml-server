@@ -32,7 +32,7 @@ jobs:
     name: 'Build, Tag & Push Image'
     runs-on: ubuntu-latest
     env:
-      ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server"
+      ECR_REPO: '${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server'
       COMMIT_ID: ${{ github.sha }}
     steps:
       - name: Checkout code
@@ -90,8 +90,8 @@ jobs:
         id: release-on-push
         with:
           bump_version_scheme: patch
-          tag_prefix: "v"
-          release_name: "MJML Server Release <RELEASE_VERSION>"
+          tag_prefix: 'v'
+          release_name: 'MJML Server Release <RELEASE_VERSION>'
           use_github_release_notes: true
     outputs:
       release_version: ${{ steps.release-on-push.outputs.tag_name }}
@@ -101,7 +101,7 @@ jobs:
     needs: [lint-and-test, build-tag-push-image, release-on-push]
     runs-on: ubuntu-latest
     env:
-      ECR_REPO: "${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server"
+      ECR_REPO: '${{ secrets.PROD_AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mjml-server'
       COMMIT_ID: ${{ github.sha }}
     if: github.ref == 'refs/heads/master'
     steps:
