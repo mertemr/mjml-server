@@ -1,13 +1,21 @@
-FROM node:20-alpine
+FROM oven/bun:1 AS builder
+
+WORKDIR /usr/src/app
+
+COPY bun.lock package.json ./
+
+RUN bun install --frozen-lockfile
+
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 
-COPY ./package.json ./package-lock.json /app/
-
-RUN npm install
+ENV NODE_ENV=production
 
 EXPOSE 15500
 
-COPY . /app/
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-ENTRYPOINT ["node", "./index.js"]
+COPY . .
+
+CMD ["npm", "start"]
