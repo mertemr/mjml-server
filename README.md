@@ -2,25 +2,18 @@
 
 A self-hosted alternative to the mjml API. Built with express.
 
-The API is compatible with https://mjml.io/api in that it only exposes one
-endpoint - `/v1/render`, but doesn't require authentication. You should probably
-run this within your own private network.
+The API is compatible with https://mjml.io/api in that it exposes only a single endpoint: `/v1/render`.  
+Unlike the official API, authentication is optional and can be configured via parameters. It is recommended to run this server within your private network.
 
-Check out the [Usage](#usage) section for more details on how to run the server.
+**Jump to:**
 
-## Fork Overview
-
-This project originates from `eatclub/mjml-server`, which itself is a fork of the original `mertemr/mjml-server` by Dani Hodovic.
-
-This fork has been significantly modernized and improved to better suit our needs, including:
-
-- A modernized Docker build with significantly reduced CVE exposure
-
-- Security-first defaults in HTTP and container configuration
-
-- Improved logging, monitoring, and error handling
-
-- Enhanced configuration management for scalability and maintainability
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Docker](#docker)
+  - [Docker Compose](#docker-compose)
+  - [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
 
 #### Why?
 
@@ -34,9 +27,27 @@ be sent to yet another third party?).
 
 For an elaborate discussion see: https://github.com/mjmlio/mjml/issues/340
 
+#### Configuration
+
+These options can be set globally via CLI or per-request via JSON:
+| Option (POST) | CLI Flag | ENV Var | Default | Description |
+| ----------------- | -------------------- | ----------------------- | ------- | ----------------------------------------------- |
+| `keepComments` | `--keep-comments` | `MJML_KEEP_COMMENTS` | true | Keep MJML comments in the HTML output |
+| `beautify` | `--beautify` | `MJML_BEAUTIFY` | false | Pretty print the output HTML |
+| `minify` | `--minify` | `MJML_MINIFY` | false | Minify the resulting HTML |
+| `validationLevel` | `--validation-level` | `MJML_VALIDATION_LEVEL` | soft | MJML validation: `strict`, `soft`, or `skip` |
+| | `--host` | `MJML_HOST` | 0.0.0.0 | Host to bind the server |
+| | `--port` | `MJML_PORT` | 15500 | Port to run the server on |
+| | `--max-body` | `MJML_MAX_BODY` | 1mb | Maximum HTTP request body size |
+| | `--use-compression` | `MJML_USE_COMPRESSION` | true | Gzip compress HTTP responses |
+| | `--auth-user` | `MJML_AUTH_USER` | | HTTP Basic Auth username (requires `auth-pass`) |
+| | `--auth-pass` | `MJML_AUTH_PASS` | | HTTP Basic Auth password (requires `auth-user`) |
+
 ## Usage
 
-For default settings, you can run the server with the following command:
+### Docker
+
+To run the MJML server using Docker, you can use the following command:
 
 ```bash
 docker run -p 15500:15500 mactorient/mjml-server:latest
@@ -48,9 +59,7 @@ You can then use the following command to render MJML to HTML:
 $ curl -i -X POST http://localhost:15500/v1/render \
     -H "Content-Type: application/json" \
     -d '{"mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Hello world</mj-text></mj-column></mj-section></mj-body></mjml>"}'
-```
 
-```bash
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Content-Length: 4272
@@ -68,95 +77,97 @@ Keep-Alive: timeout=5
 }
 ```
 
-#### Configuration
-
-These options can be set globally via CLI or per-request via JSON:
-| Option (POST) | CLI Flag | Default | Description |
-| --------------- | -------------------- | ------- | ------------------------------------ |
-| keepComments | `--keep-comments` | true | Keep MJML comments in output HTML |
-| beautify | `--beautify` | false | Pretty print the output HTML |
-| minify | `--minify` | false | Minify the resulting HTML |
-| validationLevel | `--validation-level` | soft | MJML validation (strict, soft, skip) |
-| | `--port` | 15500 | Port to run the server on |
-| | `--host` | 0.0.0.0 | Host to bind the server to |
-| | `--max-body` | 1mb | Maximum request body size |
-
-#### Example with configuration
+You can run the server using Docker with the following command:
 
 ```bash
-docker run -d -p 15500:15500 mactorient/mjml-server:latest \
-    --keep-comments \
-    --beautify \
-    --minify \
-    --validation-level strict \
-    --max-body 5mb
+docker run -d -p 15500:15500 mactorient/mjml-server:latest
 ```
 
-### Release Versioning
+### Docker Compose
 
-After merging the PR, a new version will be automatically released and pushed to MJML ECR with version bump by default.
-By default, the release version is bumped by the `patch` scheme.
+For docker compose, you can use the following `docker-compose.yml`:
 
-#### How do I change the bump version scheme using Pull Requests?
-
-If we need to override the default bump scheme, we can do this but adding one of these labels to the PR has the
-label `release:major`, `release:minor`, or `release:patch`, this will override bump_version_scheme.
-
-This repository's pull requests are an example of this in action. For example, [#19](https://github.com/rymndhng/release-on-push-action/pull/19).
-
-### Testing
-
-When testing, you can use the commit id, timestamp or branch to test. If you want to use branch
-name during testing to avoid having to constantly update the mjml tag the latest version, use the generated branch name in the
-action log. The latest image is always tagged with the branch name. The branch name is normalized, so it doesn't break any of docker's rules for image tags,
-i.e. uppercase letters are not allowed. Pay attention to the generated values used for the tag.
-
-For testing, Consider using an admin function or a view that sends an email synchronously. i.e
-
-```python
-            try:
-                send_html_mail(
-                    subject=subject, # parameterize so you can pass it in as a query, helpful when searching inbox
-                    to_address="test@eatclub.com",
-                    from_address="EAT Club Forecasting <forecasting@eatclub.com>",
-                    html_template="meetings/emails/group_order_cancelled_timeout.mjml",
-                    context={},
-                    headers={"X-SMTPAPI": '{"category": ["test"]}'},
-                    use_celery_override=email_use_celery, # set to False to send sychronousely,  parameterize so you can toggle for testing
-                )
-            except Exception as e:
-                from django.conf import settings
-
-                messages.error(
-                    request,
-                    f"MJML Host Address: {settings.MJML_HOST} "
-                    f"Email Failed to send {user.email} email. Error: {str(e)}",
-                )
-            else:
-                messages.success(request, f"Successfully sent {user.email} an email.")
+```yaml
+services:
+  mjml-server:
+    image: mactorient/mjml-server:latest
+    expose:
+      - '15500'
+    environment:
+      MJML_MINIFY: 'true'
+      MJML_KEEP_COMMENTS: 'false'
+      MJML_AUTH_USER: 'mjml'
+      MJML_AUTH_PASS: 'password'
+      MJML_VALIDATION_LEVEL: 'strict'
 ```
 
-#### Sandbox
+### Development
 
-To test the mjml server in a sandbox, use the `mjmlTag` field for the tag in `sandbox_create` jenkins job.
-Set `buildScriptsWebBranch` and `webRef` to your branch.
-Pro-tip: use your branch name or anything other than "mjml" or a variation of for your sandbox name. When debugging the console output
-it may get confusing since "mjml" is logged a lot, jenkins also uses the sandbox name to create a file. Jenkins' error messages are not always intuitive. You've been warned!
+To run the MJML server in development mode, you can clone the repository and run it using Bun:
 
-#### Blue Green Environments (Staging, Demo, Test)
+```bash
+$ git clone https://github.com/mertemr/mjml-server.git
+```
 
-Use the `blue_green_create` jenkins job.
-For blue-green environment testing, set `buildScriptsWebBranch` and `webRef` to your branch.
+```bash
+$ cd mjml-server
+```
 
-### Places to update after release
+```bash
+$ bun install
+```
 
-#### Direct Backend:
+```bash
+$ bun start -h
 
-1. `.aws/task_definitions/directprod/mjml.json`
-2. `.aws/task_definitions/directuat/mjml.json`
-3. `.github/workflows/deploy.yml`
-4. `docker-compose.yml`
+Usage: index.js [options]
 
-#### Core Web:
+Server Options
+      --host             Server host [env: MJML_HOST]  [string] [default: "0.0.0.0"]
+      --port             Server port [env: MJML_PORT]  [number] [default: 15500]
+      --use-compression  Use compression for responses [env: MJML_USE_COMPRESSION]  [boolean] [default: true]
 
-1. `build/constants/mjml_stable_ecr_tag.txt`
+Output Options
+      --keep-comments     Keep comments in the HTML output [env: MJML_KEEP_COMMENTS]  [boolean] [default: true]
+      --beautify          Beautify the HTML output [env: MJML_BEAUTIFY]  [boolean] [default: false]
+      --minify            Minify the HTML output [env: MJML_MINIFY]  [boolean] [default: false]
+      --validation-level  Available values for the validator [env: MJML_VALIDATION_LEVEL]  [string] [choices: "strict", "soft", "skip"] [default: "soft"]
+      --max-body          Max size of the http body [env: MJML_MAX_BODY]  [string] [default: "1mb"]
+
+Authentication Options
+      --auth-user  Username for HTTP Basic Authentication [env: MJML_AUTH_USER]  [string]
+      --auth-pass  Password for HTTP Basic Authentication [env: MJML_AUTH_PASS]  [string]
+
+Options:
+  -h, --help     Show help  [boolean]
+  -v, --version  Show version number  [boolean]
+
+Examples:
+  index.js --port 3000                         Start the server on port 3000.
+  index.js --minify --no-keep-comments         Minify the output and do not keep comments.
+  index.js --auth-user admin --auth-pass 1234  Use HTTP basic auth.
+
+For more information, visit https://github.com/mertemr/mjml-server
+```
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests for any improvements or features you would like to see.
+
+### Fork Overview
+
+This project originates from `eatclub/mjml-server`, which itself is a fork of the original `mertemr/mjml-server` by Dani Hodovic.
+
+This fork has been significantly modernized and improved to better suit our needs, including:
+
+- A modernized Docker build with significantly reduced CVE exposure
+
+- Security-first defaults in HTTP and container configuration
+
+- Improved logging, monitoring, and error handling
+
+- Enhanced configuration management for scalability and maintainability
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details
