@@ -2,7 +2,9 @@ node_modules
 .git*
 test
 .vscode
-.eslintrc.json
+.eslintrc.yml
+.node-version
+[Dd]ocker*
 .prettierrc
 LICENSE
 *.md
