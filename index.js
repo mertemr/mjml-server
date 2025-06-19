@@ -12,7 +12,7 @@ const server = http.createServer(app)
 try {
   server.listen(argv.port, argv.host, () => {
     logger.info('Starting MJML server...')
-    logger.info(`Server is listening on ${argv.host}:${argv.port}`)
+    logger.info(`Server is listening on http://${argv.host}:${argv.port}`)
   })
 
   server.on('error', err => {
