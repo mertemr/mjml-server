@@ -28,17 +28,17 @@
     "compression": "^1.8.1",
     "express": "^5.1.0",
     "express-winston": "^4.2.0",
-    "mjml": "^4.16.1",
+    "mjml": "^4.17.1",
     "node-graceful": "^3.1.0",
     "winston": "^3.18.3",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.0",
-    "axios": "^1.13.1",
-    "chai": "^6.2.0",
-    "eslint": "^9.39.0",
+    "@eslint/js": "^9.39.1",
+    "axios": "^1.13.2",
+    "chai": "^6.2.1",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.32.0",
@@ -47,7 +47,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-standard": "^5.0.0",
-    "mocha": "^11.7.4",
+    "mocha": "^11.7.5",
     "prettier": "^3.6.2"
   },
   "engines": {
