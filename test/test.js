@@ -120,7 +120,8 @@ describe('template variables', function () {
   })
 
   it('processes template variables correctly', async () => {
-    const mjml = '<mjml><mj-body><mj-section><mj-column><mj-text>Hello {{name}}!</mj-text></mj-column></mj-section></mj-body></mjml>'
+    const mjml =
+      '<mjml><mj-body><mj-section><mj-column><mj-text>Hello {{name}}!</mj-text></mj-column></mj-section></mj-body></mjml>'
     const res = await axios({
       method: 'POST',
       url: url + '/v1/render',
@@ -152,8 +153,12 @@ describe('batch rendering', function () {
       url: url + '/v1/render/batch',
       data: {
         requests: [
-          { mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 1</mj-text></mj-column></mj-section></mj-body></mjml>' },
-          { mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 2</mj-text></mj-column></mj-section></mj-body></mjml>' }
+          {
+            mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 1</mj-text></mj-column></mj-section></mj-body></mjml>'
+          },
+          {
+            mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 2</mj-text></mj-column></mj-section></mj-body></mjml>'
+          }
         ]
       },
       validateStatus: false
@@ -196,7 +201,9 @@ describe('validation endpoint', function () {
     const res = await axios({
       method: 'POST',
       url: url + '/v1/validate',
-      data: { mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Valid</mj-text></mj-column></mj-section></mj-body></mjml>' },
+      data: {
+        mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Valid</mj-text></mj-column></mj-section></mj-body></mjml>'
+      },
       validateStatus: false
     })
 

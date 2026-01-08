@@ -31,7 +31,7 @@ For an elaborate discussion see: https://github.com/mjmlio/mjml/issues/340
 
 These options can be set globally via CLI or per-request via JSON:
 | Option (POST) | CLI Flag | ENV Var | Default | Description |
-| ----------------- | -------------------- | ----------------------- | ------- | ----------------------------------------------- |
+| ----------------- | -------------------------- | --------------------------- | ------- | ----------------------------------------------- |
 | `keepComments` | `--keep-comments` | `MJML_KEEP_COMMENTS` | true | Keep MJML comments in the HTML output |
 | `beautify` | `--beautify` | `MJML_BEAUTIFY` | false | Pretty print the output HTML |
 | `minify` | `--minify` | `MJML_MINIFY` | false | Minify the resulting HTML |
@@ -42,6 +42,9 @@ These options can be set globally via CLI or per-request via JSON:
 | | `--use-compression` | `MJML_USE_COMPRESSION` | true | Gzip compress HTTP responses |
 | | `--auth-user` | `MJML_AUTH_USER` | | HTTP Basic Auth username (requires `auth-pass`) |
 | | `--auth-pass` | `MJML_AUTH_PASS` | | HTTP Basic Auth password (requires `auth-user`) |
+| | `--enable-rate-limit` | `MJML_ENABLE_RATE_LIMIT` | false | Enable rate limiting |
+| | `--rate-limit-max` | `MJML_RATE_LIMIT_MAX` | 100 | Max requests per window |
+| | `--rate-limit-window` | `MJML_RATE_LIMIT_WINDOW` | 15 | Rate limit window in minutes |
 
 ## Usage
 
@@ -74,6 +77,62 @@ Keep-Alive: timeout=5
     "mjml": "<mjml>...</mjml>",
     "mjml_version": "^4.15.3",
     "errors": [],
+}
+```
+
+#### Using Template Variables
+
+You can use template variables (mustache syntax) in your MJML:
+
+```bash
+$ curl -X POST http://localhost:15500/v1/render \
+    -H "Content-Type: application/json" \
+    -d '{
+      "mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Hello {{name}}, your order #{{orderId}} is confirmed!</mj-text></mj-column></mj-section></mj-body></mjml>",
+      "variables": {
+        "name": "John Doe",
+        "orderId": "12345"
+      }
+    }'
+```
+
+The `variables` field (or `data` field) supports any JSON object with key-value pairs.
+
+#### Batch Rendering
+
+Render multiple MJML templates in a single request:
+
+```bash
+$ curl -X POST http://localhost:15500/v1/render/batch \
+    -H "Content-Type: application/json" \
+    -d '{
+      "requests": [
+        {
+          "mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Email for {{name}}</mj-text></mj-column></mj-section></mj-body></mjml>",
+          "variables": {"name": "Alice"}
+        },
+        {
+          "mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Email for {{name}}</mj-text></mj-column></mj-section></mj-body></mjml>",
+          "variables": {"name": "Bob"}
+        }
+      ]
+    }'
+```
+
+Maximum batch size: 50 requests per batch.
+
+#### Template Validation
+
+Validate MJML without rendering:
+
+```bash
+$ curl -X POST http://localhost:15500/v1/validate \
+    -H "Content-Type: application/json" \
+    -d '{"mjml": "<mjml><mj-body><mj-section><mj-column><mj-text>Test</mj-text></mj-column></mj-section></mj-body></mjml>"}'
+
+{
+  "valid": true,
+  "errors": []
 }
 ```
 
