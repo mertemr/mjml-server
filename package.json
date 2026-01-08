@@ -27,6 +27,7 @@
   "dependencies": {
     "compression": "^1.8.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
     "express-winston": "^4.2.0",
     "mjml": "^4.16.1",
     "mustache": "^4.2.0",
