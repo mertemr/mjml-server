@@ -1,0 +1,29 @@
+name: mjml-server
+
+services:
+  mjml:
+    image: mactorient/mjml-server:latest
+    ports:
+      - '0.0.0.0:${MJML_EXPORT_PORT:-15500}:${MJML_PORT:-15500}/tcp'
+    environment:
+      # Server configuration
+      - MJML_USE_COMPRESSION=true
+      # Output configuration
+      - MJML_PORT=${MJML_PORT:-15500}
+      - MJML_KEEP_COMMENTS=false
+      - MJML_MINIFY=true
+      - MJML_VALIDATION_LEVEL=soft
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:${MJML_PORT:-15500}/health']
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      start_interval: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - mjml-network
+
+networks:
+  mjml-network:
+    driver: bridge
