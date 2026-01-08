@@ -106,6 +106,125 @@ describe('with --max-body', function () {
   })
 })
 
+describe('template variables', function () {
+  let server
+  let url
+
+  before(async () => {
+    server = await createApp({ validationLevel: 'soft' }).listen()
+    url = `http://localhost:${server.address().port}`
+  })
+
+  after(async () => {
+    await server.close()
+  })
+
+  it('processes template variables correctly', async () => {
+    const mjml =
+      '<mjml><mj-body><mj-section><mj-column><mj-text>Hello {{name}}!</mj-text></mj-column></mj-section></mj-body></mjml>'
+    const res = await axios({
+      method: 'POST',
+      url: url + '/v1/render',
+      data: { mjml, variables: { name: 'World' } },
+      validateStatus: false
+    })
+
+    expect(res.status).to.eql(200)
+    expect(res.data.html).to.include('Hello World!')
+  })
+})
+
+describe('batch rendering', function () {
+  let server
+  let url
+
+  before(async () => {
+    server = await createApp({ validationLevel: 'soft' }).listen()
+    url = `http://localhost:${server.address().port}`
+  })
+
+  after(async () => {
+    await server.close()
+  })
+
+  it('renders multiple mjml templates', async () => {
+    const res = await axios({
+      method: 'POST',
+      url: url + '/v1/render/batch',
+      data: {
+        requests: [
+          {
+            mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 1</mj-text></mj-column></mj-section></mj-body></mjml>'
+          },
+          {
+            mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Email 2</mj-text></mj-column></mj-section></mj-body></mjml>'
+          }
+        ]
+      },
+      validateStatus: false
+    })
+
+    expect(res.status).to.eql(200)
+    expect(res.data.results).to.have.lengthOf(2)
+    expect(res.data.results[0].success).to.be.true
+    expect(res.data.results[1].success).to.be.true
+  })
+
+  it('limits batch size to 50', async () => {
+    const requests = Array(51).fill({ mjml: '<mjml><mj-body></mj-body></mjml>' })
+    const res = await axios({
+      method: 'POST',
+      url: url + '/v1/render/batch',
+      data: { requests },
+      validateStatus: false
+    })
+
+    expect(res.status).to.eql(400)
+    expect(res.data.message).to.include('Batch size limit exceeded')
+  })
+})
+
+describe('validation endpoint', function () {
+  let server
+  let url
+
+  before(async () => {
+    server = await createApp({ validationLevel: 'soft' }).listen()
+    url = `http://localhost:${server.address().port}`
+  })
+
+  after(async () => {
+    await server.close()
+  })
+
+  it('validates valid mjml', async () => {
+    const res = await axios({
+      method: 'POST',
+      url: url + '/v1/validate',
+      data: {
+        mjml: '<mjml><mj-body><mj-section><mj-column><mj-text>Valid</mj-text></mj-column></mj-section></mj-body></mjml>'
+      },
+      validateStatus: false
+    })
+
+    expect(res.status).to.eql(200)
+    expect(res.data.valid).to.be.true
+    expect(res.data.errors).to.eql([])
+  })
+
+  it('returns errors for invalid mjml', async () => {
+    const res = await axios({
+      method: 'POST',
+      url: url + '/v1/validate',
+      data: { mjml: '<mjml><mj-body><mj-invalid></mj-invalid></mj-body></mjml>' },
+      validateStatus: false
+    })
+
+    expect(res.status).to.eql(500)
+    expect(res.data.message).to.eql('Validation error')
+  })
+})
+
 const makeReq = (url, { method = 'POST', path = '/v1/render', data = '' } = {}) => {
   return axios({
     method: 'POST',
