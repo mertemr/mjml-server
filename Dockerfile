@@ -1,14 +1,23 @@
 ARG NODE_VERSION=24
 ARG BUN_VERSION=1
 
-FROM oven/bun:${BUN_VERSION}-alpine AS builder
+FROM oven/bun:${BUN_VERSION}-alpine AS base
 
 WORKDIR /usr/src/app
 
 COPY bun.lock package.json ./
 
-RUN bun install --frozen-lockfile --production
+FROM base AS build
 
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+RUN bun run build.js
+
+FROM base AS prod-deps
+
+RUN bun install --production --frozen-lockfile
 
 FROM node:${NODE_VERSION}-alpine AS runner
 
@@ -25,10 +34,8 @@ RUN apk add --no-cache \
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs
 
-COPY --from=builder --chown=nodejs:nodejs /usr/src/app/node_modules ./node_modules
-COPY --chown=nodejs:nodejs package.json ./
-COPY --chown=nodejs:nodejs index.js ./
-COPY --chown=nodejs:nodejs lib ./lib
+COPY --from=build --chown=nodejs:nodejs /usr/src/app/dist/ ./
+COPY --from=prod-deps --chown=nodejs:nodejs /usr/src/app/node_modules ./node_modules
 
 USER nodejs
 

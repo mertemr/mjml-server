@@ -47,3 +47,8 @@ Thumbs.db
 .env
 .env.*
 *.log
+dist
+build
+.tmp
+.tmp/*
+.cache
