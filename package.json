@@ -1,7 +1,7 @@
 {
-  "name": "mjml-renderer-express-server",
-  "version": "1.2.0",
-  "description": "Dockerized mjml renderer server with Express.js",
+  "name": "mjml-server",
+  "version": "1.2.1",
+  "description": "MJML HTTP Server - A simple HTTP server for rendering MJML templates",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {

@@ -50,11 +50,26 @@ These options can be set globally via CLI or per-request via JSON:
 
 ### Docker
 
-To run the MJML server using Docker, you can use the following command:
+Run the MJML server using Docker:
 
 ```bash
 docker run -p 15500:15500 mactorient/mjml-server:latest
 ```
+
+**Image Features:**
+
+- 🐳 **Small image size:** ~241MB (optimized multi-stage build)
+- ⚡ **Bundled & minified:** esbuild optimization for faster startup
+- 🔒 **Security hardened:** Non-root user, dumb-init, minimal Alpine base
+- 💚 **Health checks:** Built-in `/v1/health` endpoint monitoring
+- 🗺️ **Source maps:** Included for debugging (open source)
+- 🏗️ **Multi-arch:** Supports amd64 and arm64
+
+**Available tags:**
+
+- `latest` - Latest stable release
+- `1.2.0` - Specific version
+- `1` - Major version
 
 You can then use the following command to render MJML to HTML:
 
@@ -215,7 +230,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests for 
 
 ### Fork Overview
 
-This project originates from `eatclub/mjml-server`, which itself is a fork of the original `mertemr/mjml-server` by Dani Hodovic.
+This project originates from `eatclub/mjml-server`, which itself is a fork of the original `danihodovic/mjml-server` by Dani Hodovic.
 
 This fork has been significantly modernized and improved to better suit our needs, including:
 
